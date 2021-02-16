@@ -108,8 +108,8 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
 
 
 def PrepareData(housing):
-    # convert textual data to numeric 
-    housing["ocean_proximity"] = OrdinalEncoder().fit_transform(housing[["ocean_proximity"]])
+    # if we want to convert the textual data in "ocean proximity" to numeric ...
+    # housing["ocean_proximity"] = OrdinalEncoder().fit_transform(housing[["ocean_proximity"]])
 
     add_bedrooms_per_room = False
     # imputer : convert na to median
@@ -135,7 +135,10 @@ def PrepareData(housing):
     #     print(housing[column].describe())
 
     # however we will continue to process the num_pipeline array ...
-    num_attribs = list(housing)
+
+    # num_attribs is a list of all the columns which are non-textual
+    #   - note that "drop" makes a copy and doesn't affect "housing" itself
+    num_attribs = list(housing.drop("ocean_proximity", axis=1))
     cat_attribs = ["ocean_proximity"]
 
     full_pipeline = ColumnTransformer([
