@@ -17,9 +17,5 @@ strat_train_set, strat_test_set = c2func.Stratify(housing=housing.copy())
 housing = strat_train_set.drop("median_house_value", axis=1)
 housing_labels = strat_train_set["median_house_value"].copy()
 
-housing = c2func.CleanupData(housing)
-
-for column in housing:
-    print(housing[column].describe())
-
+housing = c2func.PrepareData(housing)
 
