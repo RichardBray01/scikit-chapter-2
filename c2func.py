@@ -5,15 +5,7 @@ import urllib.request
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt  
-from sklearn.model_selection import train_test_split  
-from sklearn.model_selection import train_test_split  
-from sklearn.preprocessing import OrdinalEncoder
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.compose import ColumnTransformer
+
 
 from zlib import crc32
 
@@ -105,52 +97,5 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
             return np.c_[X, rooms_per_household, population_per_household, bedrooms_per_room]
         else:
             return np.c_[X, rooms_per_household, population_per_household]
-
-
-def PrepareData(housing):
-    # if we want to convert the textual data in "ocean proximity" to numeric ...
-    # housing["ocean_proximity"] = OrdinalEncoder().fit_transform(housing[["ocean_proximity"]])
-
-    add_bedrooms_per_room = False
-    # imputer : convert na to median
-    # attributes : generate value-added columns
-    # scaler : values ~ N(0,1) 
-    num_pipeline = Pipeline([
-            ('imputer', SimpleImputer(strategy="median")),
-            ('attribs_adder', CombinedAttributesAdder(add_bedrooms_per_room)),
-            ('std_scaler', StandardScaler())
-        ])
-
-    # this is how we would convert use num_pipeline and 
-    # convert the resulting array back into a data frame
-    # with the original column names ...
-    #
-    # if add_bedrooms_per_room:
-    #     extracols  = ['add1', 'add2', 'add3'] 
-    # else:
-    #     extracols = ['add1', 'add2'] # need add3 if passing True
-    # housing = pd.DataFrame(data=num_pipeline.fit_transform(housing),
-    #     columns= housing.columns.union(extracols) )
-    # for column in housing:
-    #     print(housing[column].describe())
-
-    # however we will continue to process the num_pipeline array ...
-
-    # num_attribs is a list of all the columns which are non-textual
-    #   - note that "drop" makes a copy and doesn't affect "housing" itself
-    num_attribs = list(housing.drop("ocean_proximity", axis=1))
-    cat_attribs = ["ocean_proximity"]
-
-    full_pipeline = ColumnTransformer([
-        ("num", num_pipeline, num_attribs),
-        ("cat", OneHotEncoder(), cat_attribs)
-    ])
-    
-    return full_pipeline.fit_transform(housing)
-
-
-   
-
-
 
 
