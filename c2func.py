@@ -127,7 +127,8 @@ def CleanupData(housing):
     housing = pd.DataFrame(data=num_pipeline.fit_transform(housing),
         columns= housing.columns.union(extracols) )
 
-    return housing
+    return housing  # get this back
+    
    
 
 
