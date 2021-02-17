@@ -27,10 +27,9 @@ strat_train_set, strat_test_set = c2func.Stratify(housing=housing.copy())
 housing = strat_train_set.drop("median_house_value", axis=1)
 housing_labels = strat_train_set["median_house_value"].copy()
 
-add_bedrooms_per_room = False
 num_pipeline = Pipeline([
         ('imputer', SimpleImputer(strategy="median")),
-        ('attribs_adder', c2func.CombinedAttributesAdder(add_bedrooms_per_room)),
+        ('attribs_adder', c2func.CombinedAttributesAdder()),
         ('std_scaler', StandardScaler())
     ])
 num_attribs = list(housing.drop("ocean_proximity", axis=1))
@@ -50,5 +49,6 @@ some_data = housing.iloc[:5]
 some_labels = housing_labels.iloc[:5]
 some_data_prepared = full_pipeline.transform(some_data)
 print("Predictions: ", lin_reg.predict(some_data_prepared))
+print("Labels: ", list(some_labels))
 
 

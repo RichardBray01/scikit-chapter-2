@@ -5,6 +5,8 @@ import urllib.request
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt  
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
 from zlib import crc32
@@ -12,6 +14,41 @@ from zlib import crc32
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml2/master/"
 HOUSING_PATH = os.path.join("datasets", "housing")
 HOUSING_URL = DOWNLOAD_ROOT + "datasets/housing/housing.tgz"
+
+# def messing(data):
+    # print(data.info())
+    # print(data["ocean_proximity"].value_counts())
+    # print(data.describe())
+    # print(data.head())
+    # data.hist(bins=50, figsize=(20,15))
+    # plt.show(block=False)
+# example use ...
+# chap2_functions.messing(data = housing)
+# plt.show()
+
+# def ShowInitialCharts(housing):
+#     housing.plot(kind="scatter", x="longitude", y="latitude", alpha=0.4,
+#         s=housing["population"]/100, label="population", figsize=(10,7),
+#         c="median_house_value", cmap=plt.get_cmap("jet"), colorbar=True,)
+#     plt.legend()
+#     corr_matrix = housing.corr()
+#     print(corr_matrix["median_house_value"].sort_values(ascending=False))
+#     from pandas.plotting import scatter_matrix
+#     attributes = ["median_house_value", "median_income", "total_rooms",
+#         "housing_median_age"]
+#     scatter_matrix(housing[attributes], figsize=(12,8))
+#     housing.plot(kind="scatter", x="median_income", y="median_house_value",
+#         alpha=0.1)
+
+# def split_train_test_by_id(data, test_ratio, id_column ):
+#     ids = data[id_column]
+#     in_test_set = ids.apply(lambda id_: test_set_check(id_, test_ratio))
+#     return data.loc[~in_test_set], data.loc[in_test_set]
+# example use ...
+# housing_with_id = housing.reset_index() # adds an 'index' column
+# train_set, test_set = split_train_test_by_id(housing_with_id, 0.2, "index")
+# print(len(train_set), len(test_set))
+
 
 def fetch_housing_data(housing_url=HOUSING_URL, housing_path=HOUSING_PATH):
     os.makedirs(housing_path, exist_ok=True)
@@ -25,31 +62,8 @@ def load_housing_data(housing_path=HOUSING_PATH):
     csv_path = os.path.join(housing_path, "housing.csv")
     return pd.read_csv(csv_path)
 
-# def messing(data):
-    print(data.info())
-    print(data["ocean_proximity"].value_counts())
-    print(data.describe())
-    print(data.head())
-    data.hist(bins=50, figsize=(20,15))
-    plt.show(block=False)
-# example use ...
-# chap2_functions.messing(data = housing)
-# plt.show()
-
-
 def test_set_check(identifier, test_ratio):
     return crc32(np.int64(identifier)) & 0xffffffff < test_ratio * 2**32
-
-def split_train_test_by_id(data, test_ratio, id_column ):
-    ids = data[id_column]
-    in_test_set = ids.apply(lambda id_: test_set_check(id_, test_ratio))
-    return data.loc[~in_test_set], data.loc[in_test_set]
-# example use ...
-# housing_with_id = housing.reset_index() # adds an 'index' column
-# train_set, test_set = split_train_test_by_id(housing_with_id, 0.2, "index")
-# print(len(train_set), len(test_set))
-
-from sklearn.model_selection import StratifiedShuffleSplit
 
 def Stratify(housing):
     housing["income_cat"]= pd.cut(
@@ -63,26 +77,12 @@ def Stratify(housing):
     for train_index, test_index in split.split(housing, housing["income_cat"]):
         strat_train_set = housing.loc[train_index]
         strat_test_set = housing.loc[test_index]
+
     for set_ in (strat_train_set, strat_test_set):
         set_.drop("income_cat", axis=1, inplace=True)
 
     return strat_train_set, strat_test_set 
 
-def ShowInitialCharts(housing):
-    housing.plot(kind="scatter", x="longitude", y="latitude", alpha=0.4,
-        s=housing["population"]/100, label="population", figsize=(10,7),
-        c="median_house_value", cmap=plt.get_cmap("jet"), colorbar=True,)
-    plt.legend()
-    corr_matrix = housing.corr()
-    print(corr_matrix["median_house_value"].sort_values(ascending=False))
-    from pandas.plotting import scatter_matrix
-    attributes = ["median_house_value", "median_income", "total_rooms",
-        "housing_median_age"]
-    scatter_matrix(housing[attributes], figsize=(12,8))
-    housing.plot(kind="scatter", x="median_income", y="median_house_value",
-        alpha=0.1)
-
-from sklearn.base import BaseEstimator, TransformerMixin
 class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
     def __init__(self, add_bedrooms_per_room = True):
         self.add_bedrooms_per_room = add_bedrooms_per_room
